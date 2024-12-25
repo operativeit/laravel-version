@@ -1,0 +1,41 @@
+{
+    "name": "eom-plus/laravel-version",
+    "description": "Eom+ versioning",
+    "keywords": [
+        "laravel",
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^7.3|^8.0",
+        "laravel/framework": "^11.31",
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "EomPlus\\Version\\": "src/"
+        },
+        "files": [
+            "./src/helpers.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Sebastien CRAMATTE",
+            "email": "oss@operativeit.es",
+            "homepage": "https://operativeit.es"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^11.0.1"
+    },
+    "extra": {
+      "laravel": {
+        "providers": [
+          "EomPlus\\Version\\Provider"
+        ],
+        "aliases": {
+           "Sequence": "EomPlus\\Version\\Facade"
+        }
+      }
+    }
+}
