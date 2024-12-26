@@ -26,6 +26,19 @@ php artisan version:init
 php artisan version (patch|minor|major)
 ```
 
+### commit to git
+
+```bash
+php artisan version commit
+```
+
+Create github workflow to create release automatically.
+
+* Create directory .github/workflows in your git repository
+* Copy our file .github/workflows/release.yml to your .github/workflows
+* On your the next commit, a release will be created automatically.
+
+
 ### helpers
 
 version()
