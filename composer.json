@@ -2,12 +2,12 @@
     "name": "eom-plus/laravel-version",
     "description": "Eom+ versioning",
     "keywords": [
-        "laravel",
+        "laravel"
     ],
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
-        "laravel/framework": "^11.31",
+        "laravel/framework": "^11.31"
     },
     "minimum-stability": "stable",
     "autoload": {

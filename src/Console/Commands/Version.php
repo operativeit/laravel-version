@@ -7,6 +7,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Exception;
 
 class Version extends Command
 {
@@ -16,6 +17,10 @@ class Version extends Command
      * @var string
      */
     protected $signature = 'version {cmd?}';
+
+    protected $version;
+
+    protected $filePath;
 
     /**
      * The console command description.
@@ -31,7 +36,7 @@ class Version extends Command
 
         $process->setTimeout(null)
             ->run(function ($type, $line) use (&$output) {
-                $output.= $line;
+                $output .= $line;
             });
 
         if (! $process->isSuccessful()) {
@@ -39,6 +44,12 @@ class Version extends Command
         }
 
         return $output;
+    }
+
+    public function formatVersion($format='v{major}.{minor}.{patch}') {
+        return preg_replace_callback('/{([^}]+)}/', function ($matches) {
+	   return $this->version->{$matches[1]};
+        }, $format, -1);
     }
 
     public static function getHash()
@@ -51,15 +62,17 @@ class Version extends Command
         return Carbon::parse(trim(self::execCommand('git log -n1 --pretty=%ci HEAD')));
     }
 
-    public static function createTag(&$version)
+    public function createTag()
     {
-        $tag = Str::replaceMatches('/{([^}]+)}/', function (array $matches) use ($version) {
-            return $version->{$matches[1]};
-        }, 'v{major}.{minor}.{patch}');
+        $tag = $this->formatVersion();
+	$currentPath = getcwd();
+        if (!file_exists($currentPath.'/.git')) {
+           throw new Exception('The current directory is not a git repository');
+        }
 
-        echo self::execCommand('git add '. base_path('version.json'));
+        echo self::execCommand('git add version.json');
         echo self::execCommand('git commit -m "prepare to release'.$tag.'"');
-        echo  self::execCommand('git push');
+        echo self::execCommand('git push');
 
         $cmd = Str::replaceArray('?', [$tag, 'version '.$tag.' is released'], "git tag -a ? -m '?'");
         self::execCommand($cmd);
@@ -67,28 +80,38 @@ class Version extends Command
         $cmd = Str::replaceArray('?', [$tag], 'git push origin ?');
         self::execCommand($cmd);
 
-        $version->hash = self::getHash();
-        $version->date = self::getDate()->format('d/m/y H:i');
+        $this->version->hash = self::getHash();
+        $this->version->date = self::getDate()->format('d/m/y H:i');
 
-	echo 'version '.$tag.' is released' . PHP_EOL;
+        $this->info('Version '.$tag.' is released');
+	$this->save();
     }
 
-    public static function getVersion()
+    public function load()
     {
-        if (! file_exists(base_path('version.json'))) {
-            return [
-                'major' => 0,
-                'minor' => 0,
-                'patch' => 0,
-            ];
+	$current_path = getcwd();
+	if (file_exists($current_path.'/version.json')) {
+             $this->filePath = $current_path.'/version.json';
+             $this->version = json_decode(file_get_contents($current_path.'/version.json'), false, 512, JSON_THROW_ON_ERROR);
         } else {
-            return json_decode(file_get_contents(base_path('version.json')), false, 512, JSON_THROW_ON_ERROR);
+
+            if ($this->confirm('No version.json in current directory, do you want to use the one at '. base_path(), false)) {
+		if (file_exists(base_path('version.json'))) {
+                    $this->version = json_decode(file_get_contents(base_path('version.json')), false, 512, JSON_THROW_ON_ERROR);
+                } else {
+                   throw new Exception('No version.json at '.base_path());
+                }
+            } else {
+		throw new Exception('No version.json in current directory');
+            }
         }
+
+        return true;
     }
 
-    public static function saveVersion($version)
+    public function save()
     {
-        file_put_contents(base_path('version.json'), json_encode($version, JSON_PRETTY_PRINT));
+        file_put_contents($this->filePath, json_encode($this->version, JSON_PRETTY_PRINT));
     }
 
     /**
@@ -97,28 +120,29 @@ class Version extends Command
     public function handle()
     {
         try {
-            $version = self::getVersion();
+            $this->load();
 
             if ($cmd = $this->argument('cmd')) {
                 switch ($cmd) {
                     case 'patch':
-                        $version->patch += 1;
+                        $this->version->patch += 1;
                         break;
                     case 'major':
-                        $version->major += 1;
+                        $this->version->major += 1;
                         break;
                     case 'minor':
-                        $version->minor += 1;
+                        $this->version->minor += 1;
                         break;
                     default:
                         throw new \Exception('unknown command');
                 }
-                self::saveVersion($version);
-                self::createTag($version);
+                $this->save();
+                $this->createTag();
             }
 
         } catch (\Exception $exception) {
-            echo $exception->getMessage();
+            $this->error($exception->getMessage());
+            return 1;
         }
     }
 }

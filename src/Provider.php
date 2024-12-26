@@ -4,20 +4,20 @@ namespace EomPlus\Version;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use EomPlus\Version\Console\Commands;
 
 class Provider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
      *
-     * @param Router $router
      *
      * @return void
      */
     public function boot(Router $router)
     {
         $this->publishes([
-            __DIR__ . '/../config/version.php' => config_path('version.php'),
+            __DIR__.'/../config/version.php' => config_path('version.php'),
         ], 'version');
 
         $this->app->singleton('version', function ($app) {
@@ -34,11 +34,15 @@ class Provider extends ServiceProvider
     {
         $this->registerCommands();
 
-        $this->mergeConfigFrom(__DIR__ . '/../config/version.php', 'version');
+        $this->mergeConfigFrom(__DIR__.'/../config/version.php', 'version');
     }
 
-    protected function registerCommands() {
+    protected function registerCommands()
+    {
+        $this->commands([
+            Commands\Version::class,
+            Commands\VersionInit::class,
+        ]);
 
     }
-
 }
