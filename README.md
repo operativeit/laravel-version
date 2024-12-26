@@ -53,8 +53,8 @@ Create github workflow to create release automatically.
 
 ### helpers
 
-version() , returns current version
-codename(), return current codename
+- version() , returns current version
+- codename(), return current codename
 
 ## Changelog
 
