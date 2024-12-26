@@ -2,9 +2,9 @@
 
 namespace EomPlus\Version;
 
+use EomPlus\Version\Console\Commands;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
-use EomPlus\Version\Console\Commands;
 
 class Provider extends ServiceProvider
 {

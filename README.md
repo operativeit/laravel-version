@@ -20,13 +20,25 @@ composer require eom-plus/laravel-version
 php artisan version:init
 ```
 
-### increment version patch/min/major
+### set new version
+
+Set new version using semver format, eg 1.0.0
 
 ```bash
-php artisan version (patch|minor|major)
+php artisan version <newversion>
 ```
 
-### commit to git
+### increment version patch/min/major
+
+Increment version number
+
+```bash
+php artisan version [ patch | minor | major ]
+```
+
+### commit release to git 
+
+Create and commit git tag for the current release
 
 ```bash
 php artisan version commit
@@ -41,7 +53,8 @@ Create github workflow to create release automatically.
 
 ### helpers
 
-version()
+version() , returns current version
+codename(), return current codename
 
 ## Changelog
 

@@ -1,6 +1,6 @@
 <?php
 
-if (!function_exists('version')) {
+if (! function_exists('version')) {
 
     function version()
     {
@@ -12,10 +12,10 @@ if (!function_exists('version')) {
     }
 }
 
-if (!function_exists('codename')) {
+if (! function_exists('codename')) {
 
     function codename()
     {
-      return 'supernova';
+        return 'supernova';
     }
 }

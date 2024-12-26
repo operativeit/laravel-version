@@ -2,12 +2,12 @@
 
 namespace EomPlus\Version\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
-use Exception;
 
 class Version extends Command
 {
@@ -16,7 +16,8 @@ class Version extends Command
      *
      * @var string
      */
-    protected $signature = 'version {cmd?}';
+    protected $signature = 'version
+                            {cmd? : [ <newversion> |  major | minor | patch | commit ] }';
 
     protected $version;
 
@@ -27,7 +28,7 @@ class Version extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'This command allows to increment  major, minor and patch version as well create and commit tag for the release';
 
     protected static function execCommand($cmd)
     {
@@ -46,9 +47,10 @@ class Version extends Command
         return $output;
     }
 
-    public function formatVersion($format='v{major}.{minor}.{patch}') {
+    public function formatVersion($format = 'v{major}.{minor}.{patch}')
+    {
         return preg_replace_callback('/{([^}]+)}/', function ($matches) {
-	   return $this->version->{$matches[1]};
+            return $this->version->{$matches[1]};
         }, $format, -1);
     }
 
@@ -65,9 +67,9 @@ class Version extends Command
     public function createTag()
     {
         $tag = $this->formatVersion();
-	$currentPath = getcwd();
-        if (!file_exists($currentPath.'/.git')) {
-           throw new Exception('The current directory is not a git repository');
+        $currentPath = getcwd();
+        if (! file_exists($currentPath.'/.git')) {
+            throw new Exception('The current directory is not a git repository');
         }
 
         echo self::execCommand('git add version.json');
@@ -84,25 +86,24 @@ class Version extends Command
         $this->version->date = self::getDate()->format('d/m/y H:i');
 
         $this->info('Version '.$tag.' is released');
-	$this->save();
     }
 
     public function load()
     {
-	$current_path = getcwd();
-	if (file_exists($current_path.'/version.json')) {
-             $this->filePath = $current_path.'/version.json';
-             $this->version = json_decode(file_get_contents($current_path.'/version.json'), false, 512, JSON_THROW_ON_ERROR);
+        $current_path = getcwd();
+        if (file_exists($current_path.'/version.json')) {
+            $this->filePath = $current_path.'/version.json';
+            $this->version = json_decode(file_get_contents($current_path.'/version.json'), false, 512, JSON_THROW_ON_ERROR);
         } else {
 
-            if ($this->confirm('No version.json in current directory, do you want to use the one at '. base_path(), false)) {
-		if (file_exists(base_path('version.json'))) {
+            if ($this->confirm('No version.json in current directory, do you want to use the one at '.base_path(), false)) {
+                if (file_exists(base_path('version.json'))) {
                     $this->version = json_decode(file_get_contents(base_path('version.json')), false, 512, JSON_THROW_ON_ERROR);
                 } else {
-                   throw new Exception('No version.json at '.base_path());
+                    throw new Exception('No version.json at '.base_path());
                 }
             } else {
-		throw new Exception('No version.json in current directory');
+                throw new Exception('No version.json in current directory');
             }
         }
 
@@ -133,15 +134,28 @@ class Version extends Command
                     case 'minor':
                         $this->version->minor += 1;
                         break;
+                    case 'commit':
+                        $this->createTag();
+                        break;
                     default:
-                        throw new \Exception('unknown command');
+			if (preg_match('/^(\d+)\.(\d+)\.(\d+)$/', $cmd , $version)) {
+                            $this->version = (object) [
+                                'major' => $version[1],
+                                'minor' => $version[2],
+                                'patch' => $version[3],
+                            ];
+                        } else {
+                            throw new \Exception('unknown command');
+                        }
                 }
                 $this->save();
-                $this->createTag();
+            } else {
+                $this->info($this->formatVersion());
             }
 
         } catch (\Exception $exception) {
             $this->error($exception->getMessage());
+
             return 1;
         }
     }

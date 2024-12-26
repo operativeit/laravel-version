@@ -1,6 +1,6 @@
 {
     "name": "eom-plus/laravel-version",
-    "description": "Eom+ versioning",
+    "description": "Version management package for Laravel",
     "keywords": [
         "laravel"
     ],
