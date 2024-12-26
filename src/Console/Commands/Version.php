@@ -72,8 +72,13 @@ class Version extends Command
             throw new Exception('The current directory is not a git repository');
         }
 
+        $cmd = Str::replaceArray('?', [$tag], 'git tag -l ?');
+        if (self::execCommand($cmd)) {
+            throw new Exception('Version '.$tag.' already exists, increment it before commit');
+        }
+
         echo self::execCommand('git add version.json');
-        echo self::execCommand('git commit -m "prepare to release'.$tag.'"');
+        echo self::execCommand('git commit -m "Update version to '.$tag.'"');
         echo self::execCommand('git push');
 
         $cmd = Str::replaceArray('?', [$tag, 'version '.$tag.' is released'], "git tag -a ? -m '?'");
@@ -82,8 +87,10 @@ class Version extends Command
         $cmd = Str::replaceArray('?', [$tag], 'git push origin ?');
         self::execCommand($cmd);
 
+	/*
         $this->version->hash = self::getHash();
         $this->version->date = self::getDate()->format('d/m/y H:i');
+	*/
 
         $this->info('Version '.$tag.' is released');
     }
