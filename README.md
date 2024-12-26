@@ -12,23 +12,23 @@ Run the following command:
 composer require eom-plus/laravel-version
 ```
 
-### 2. Publish
-
-Publish config file.
-
-```bash
-php artisan vendor:publish --tag=version
-```
-
-### 3. Configure
-
-You can change the version information of your app from `config/version.php` file
-
 ## Usage
 
-### version($method = null)
+### init
 
-You can either enter the method like `version('short')` or leave it empty so you could firstly get the instance then call the methods like `version()->short()`
+```bash
+php artisan version:init
+```
+
+### increment version patch/min/major
+
+```bash
+php artisan version (patch|minor|major)
+```
+
+### helpers
+
+version()
 
 ## Changelog
 
