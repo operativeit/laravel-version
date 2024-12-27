@@ -78,7 +78,7 @@ class Version extends Command
         }
 
         echo self::execCommand('git add version.json');
-        echo self::execCommand('git commit -m "Update version to '.$tag.'"');
+        echo self::execCommand('git commit -nm "Update version to '.$tag.'"');
         echo self::execCommand('git push');
 
         $cmd = Str::replaceArray('?', [$tag, 'version '.$tag.' is released'], "git tag -a ? -m '?'");
